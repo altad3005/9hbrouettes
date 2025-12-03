@@ -25,6 +25,7 @@ const StaffScan = () => {
     // On relance cet effet quand 'manualMode' OU 'lastScan' change.
     useEffect(() => {
         let scanner = null;
+        let isMounted = true;
 
         // On ne démarre le scanner QUE SI :
         // - Pas de mode manuel
@@ -33,6 +34,7 @@ const StaffScan = () => {
 
             // Petit délai pour être sûr que le DOM est prêt
             setTimeout(() => {
+                if (!isMounted) return;
                 // Vérification de sécurité si l'élément existe bien
                 if (!document.getElementById("reader")) return;
 
@@ -49,6 +51,7 @@ const StaffScan = () => {
 
         // NETTOYAGE : Quand le composant change ou qu'un scan réussit, on TUE le scanner
         return () => {
+            isMounted = false;
             if (scanner) {
                 try {
                     scanner.clear().catch(err => console.log("Nettoyage scanner", err));
@@ -57,7 +60,7 @@ const StaffScan = () => {
                 }
             }
         };
-    }, [manualMode, lastScan]); // <--- AJOUT DE lastScan ICI
+    }, [manualMode, lastScan]);
 
     async function onScanSuccess(decodedText, decodedResult) {
         // Double sécurité avec le useRef
