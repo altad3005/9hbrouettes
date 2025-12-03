@@ -5,29 +5,44 @@ const Protected = ({ children, type = "admin" }) => {
     const [inputCode, setInputCode] = useState("");
     const [error, setError] = useState(false);
 
-    // Mots de passe (Tu pourras les changer ici)
-    const ADMIN_PASS = "1234";  // Pour toi (Reset, création équipes)
-    const STAFF_PASS = "0000";  // Pour les bénévoles (Scan uniquement)
+    // --- CONFIGURATION DES MOTS DE PASSE ---
+    const ADMIN_PASS = "1234";  // Accès total (Admin + Scan)
+    const STAFF_PASS = "0000";  // Accès Scan uniquement
 
+    // C'est ici que la correction a lieu 👇
     useEffect(() => {
-        // On vérifie si l'utilisateur s'est déjà connecté avant (mémoire du navigateur)
+        // On réinitialise les erreurs quand on change de page
+        setError(false);
+        setInputCode("");
+
         const storedAuth = localStorage.getItem(`auth_${type}`);
+
         if (storedAuth === "true") {
             setIsAuthenticated(true);
+        } else {
+            // IMPORTANT : Si pas de cookie, on force le verrouillage !
+            setIsAuthenticated(false);
         }
-    }, [type]);
+    }, [type]); // Ce code s'exécute à chaque fois que 'type' change
 
     const handleLogin = (e) => {
         e.preventDefault();
 
-        // Vérification du mot de passe selon le type de page
-        let valid = false;
-        if (type === "admin" && inputCode === ADMIN_PASS) valid = true;
-        if (type === "staff" && (inputCode === STAFF_PASS || inputCode === ADMIN_PASS)) valid = true;
+        let isValid = false;
 
-        if (valid) {
+        // --- LOGIQUE DE SÉCURITÉ ---
+        if (type === "admin") {
+            // Pour l'admin, SEUL le code admin marche
+            if (inputCode === ADMIN_PASS) isValid = true;
+        }
+        else if (type === "staff") {
+            // Pour le staff, le code staff OU admin marche
+            if (inputCode === STAFF_PASS || inputCode === ADMIN_PASS) isValid = true;
+        }
+
+        if (isValid) {
             setIsAuthenticated(true);
-            localStorage.setItem(`auth_${type}`, "true"); // On se souvient de lui
+            localStorage.setItem(`auth_${type}`, "true");
             setError(false);
         } else {
             setError(true);
@@ -40,7 +55,7 @@ const Protected = ({ children, type = "admin" }) => {
         localStorage.removeItem(`auth_${type}`);
     };
 
-    // SI PAS CONNECTÉ : On affiche le formulaire de login
+    // AFFICHAGE FORMULAIRE
     if (!isAuthenticated) {
         return (
             <div className="flex flex-col items-center justify-center h-screen bg-slate-900 text-white p-4">
@@ -59,7 +74,7 @@ const Protected = ({ children, type = "admin" }) => {
                             autoFocus
                         />
 
-                        {error && <p className="text-red-500 font-bold text-sm">Code incorrect !</p>}
+                        {error && <p className="text-red-500 font-bold text-sm animate-pulse">Code incorrect !</p>}
 
                         <button type="submit" className="bg-lime-400 text-slate-900 font-black py-3 rounded-lg uppercase tracking-wider hover:bg-lime-300 transition-colors">
                             Déverrouiller
@@ -70,14 +85,12 @@ const Protected = ({ children, type = "admin" }) => {
         );
     }
 
-    // SI CONNECTÉ : On affiche le contenu protégé + un petit bouton déconnexion discret
     return (
         <>
             {children}
-            {/* Bouton de déconnexion flottant en bas à gauche */}
             <button
                 onClick={handleLogout}
-                className="fixed bottom-2 left-2 opacity-50 hover:opacity-100 text-[10px] bg-red-900 text-white px-2 py-1 rounded z-50"
+                className="fixed bottom-2 left-2 opacity-30 hover:opacity-100 text-[10px] bg-red-900 text-white px-2 py-1 rounded z-50 transition-opacity"
             >
                 🔒 Lock
             </button>
