@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import {collection, onSnapshot, query, orderBy, doc} from 'firebase/firestore';
 import SponsorsBanner from '../components/SponsorsBanner';
 import { db } from '../firebase';
 import logoImg from '../assets/logo.png';
@@ -21,10 +21,26 @@ const Classement = () => {
         return () => unsubscribe();
     }, []);
 
-    // CHRONO
+    // NOUVEAU CODE CHRONO DYNAMIQUE
+    const [targetDate, setTargetDate] = useState(null);
+
+    // 1. On écoute la configuration dans Firebase
     useEffect(() => {
+        // Importe bien 'doc' en haut du fichier avec les autres imports !
+        // import { collection, ..., doc } from 'firebase/firestore';
+        const unsubConfig = onSnapshot(doc(db, "config", "course"), (docSnap) => {
+            if (docSnap.exists() && docSnap.data().endTime) {
+                setTargetDate(new Date(docSnap.data().endTime).getTime());
+            }
+        });
+        return () => unsubConfig();
+    }, []);
+
+    // 2. Le compte à rebours
+    useEffect(() => {
+        if (!targetDate) return; // On attend d'avoir la date
+
         const timer = setInterval(() => {
-            const targetDate = new Date("2025-12-02T23:00:00").getTime();
             const now = new Date().getTime();
             const difference = targetDate - now;
 
@@ -40,8 +56,9 @@ const Classement = () => {
                 setTimeLeft(`${h}:${m}:${s}`);
             }
         }, 1000);
+
         return () => clearInterval(timer);
-    }, []);
+    }, [targetDate]); // Important : on relance si la date change
 
     return (
         <div className="flex flex-col h-screen bg-lime-300 font-sans overflow-hidden">

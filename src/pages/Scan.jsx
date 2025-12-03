@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react"; // 1. AJOUT DE useRef
 import { collection, onSnapshot, orderBy, query, doc, updateDoc, increment, getDoc } from "firebase/firestore";
 import { db } from "../firebase.js";
 import { Html5QrcodeScanner } from "html5-qrcode";
@@ -8,6 +8,9 @@ const StaffScan = () => {
     const [scanError, setScanError] = useState(null);
     const [manualMode, setManualMode] = useState(false);
     const [teams, setTeams] = useState([]);
+
+    // 2. CRÉATION DU VERROU (Par défaut : ouvert = false)
+    const isProcessing = useRef(false);
 
     useEffect(() => {
         const q = query(collection(db, "teams"), orderBy("nom"));
@@ -29,18 +32,34 @@ const StaffScan = () => {
         }
         return () => {
             if (scanner) {
-                scanner.clear().catch(error => console.error("Failed to clear html5-qrcode scanner. ", error));
+                scanner.clear().catch(error => console.error("Failed to clear scanner", error));
             }
         };
     }, [manualMode]);
 
     async function onScanSuccess(decodedText, decodedResult) {
+        // 3. VÉRIFICATION DU VERROU
+        // Si on est déjà en train de traiter un tour, on arrête TOUT DE SUITE.
+        if (isProcessing.current) {
+            return;
+        }
+
+        // 4. ON FERME LE VERROU
+        isProcessing.current = true;
+
         console.log(`Code scanné = ${decodedText}`, decodedResult);
         await handleAddTour(decodedText);
+
+        // 5. ON ROUVRE LE VERROU APRÈS 3 SECONDES
+        // Ça laisse le temps au bénévole d'enlever le téléphone du QR code
+        setTimeout(() => {
+            isProcessing.current = false;
+            setLastScan(null); // On efface le message vert en même temps
+        }, 3000);
     }
 
     function onScanFailure(error) {
-        console.warn(`Code scan error = ${error}`);
+        // console.warn(`Code scan error = ${error}`);
     }
 
     async function handleAddTour(teamId) {
@@ -50,6 +69,8 @@ const StaffScan = () => {
 
             if (!docSnap.exists()) {
                 setScanError(`L'équipe "${teamId}" n'existe pas !`);
+                // Si erreur, on déverrouille plus vite (1 seconde) pour pouvoir rescanner
+                setTimeout(() => { isProcessing.current = false; }, 1000);
                 return;
             }
 
@@ -59,11 +80,13 @@ const StaffScan = () => {
 
             setLastScan(`Tour ajouté pour : ${docSnap.data().nom} !`);
             setScanError(null);
-            setTimeout(() => setLastScan(null), 3000);
+
+            // Note : On ne déverrouille pas ici, c'est le setTimeout dans onScanSuccess qui s'en charge
 
         } catch (e) {
             console.error("Erreur", e);
             setScanError("Erreur lors de l'ajout du tour.");
+            isProcessing.current = false; // On déverrouille en cas de crash
         }
     }
 
@@ -72,7 +95,7 @@ const StaffScan = () => {
             <h1 className="text-2xl font-bold text-center mb-4 text-blue-900">📷 Scanner Brouette</h1>
 
             {lastScan && (
-                <div className="bg-green-500 text-white p-4 rounded-xl text-center text-xl font-bold mb-4 animate-bounce">
+                <div className="bg-green-500 text-white p-4 rounded-xl text-center text-xl font-bold mb-4 animate-bounce shadow-lg border-4 border-green-700">
                     ✅ {lastScan}
                 </div>
             )}
@@ -93,8 +116,17 @@ const StaffScan = () => {
 
             {!manualMode && (
                 <div className="bg-white p-4 rounded-xl shadow-lg">
-                    <div id="reader" width="100%"></div>
-                    <p className="text-center text-gray-500 mt-2 text-sm">Visez le QR Code de la brouette</p>
+                    {/* Si le verrou est actif (isProcessing), on peut afficher un petit texte */}
+                    {lastScan ? (
+                        <div className="h-64 flex items-center justify-center bg-green-100 rounded text-green-800 font-bold animate-pulse">
+                            SCAN VALIDÉ... ATTENDEZ 3s
+                        </div>
+                    ) : (
+                        <>
+                            <div id="reader" width="100%"></div>
+                            <p className="text-center text-gray-500 mt-2 text-sm">Visez le QR Code de la brouette</p>
+                        </>
+                    )}
                 </div>
             )}
 
