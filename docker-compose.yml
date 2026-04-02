@@ -1,0 +1,62 @@
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB:       9hbrouette
+      POSTGRES_USER:     brouette
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U brouette -d 9hbrouette"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      NODE_ENV:       production
+      PORT:           3333
+      HOST:           0.0.0.0
+      LOG_LEVEL:      info
+      SESSION_DRIVER: cookie
+      APP_KEY:        ${APP_KEY}
+      APP_URL:        ${APP_URL}
+      DB_CONNECTION:  pg
+      DB_HOST:        postgres
+      DB_PORT:        5432
+      DB_USER:        brouette
+      DB_PASSWORD:    ${DB_PASSWORD}
+      DB_DATABASE:    9hbrouette
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  inscription:
+    build:
+      context: .
+      dockerfile: apps/inscription/Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  compteur:
+    build:
+      context: .
+      dockerfile: apps/compteur/Dockerfile
+    ports:
+      - "8081:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

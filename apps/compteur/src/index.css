@@ -1,0 +1,15 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&display=swap');
+
+@theme {
+  --color-cream: #f7f5e1;
+  --color-cream-dark: #e8e4c8;
+  --color-navy: #1a2744;
+  --color-forest: #2d6a4f;
+
+  --font-condensed: 'Barlow Condensed', ui-sans-serif, system-ui, sans-serif;
+  --font-poster: 'Barlow Condensed', Impact, ui-sans-serif, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { -webkit-font-smoothing: antialiased; }

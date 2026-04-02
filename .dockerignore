@@ -1,0 +1,23 @@
+# Git
+.git
+.gitignore
+
+# Dependencies (rebuilt in Docker)
+**/node_modules
+
+# Build outputs
+**/dist
+**/build
+apps/api/tmp/*
+
+# Environment secrets
+**/.env
+**/.env.production
+**/.env.*.local
+
+# Dev tools
+**/.DS_Store
+**/*.log
+**/.vscode
+**/.idea
+.turbo

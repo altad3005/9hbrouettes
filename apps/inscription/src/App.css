@@ -1,0 +1,215 @@
+/* ── Brouette background ── */
+.brouette-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.brouette-bg img {
+  position: absolute;
+  width: 90px;
+  opacity: 0.10;
+}
+
+/* ── Notification toast ── */
+.toast {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 14px;
+  color: #fff;
+  text-align: center;
+  font-weight: 700;
+  font-size: 15px;
+  z-index: 9999;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  transition: top 0.4s ease;
+}
+.toast.hidden { top: -80px; }
+.toast.success { background: #28a745; }
+.toast.error   { background: #dc3545; }
+
+/* ── Layout ── */
+.container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+/* ── Logo ── */
+.logo {
+  width: 180px;
+  max-width: 60vw;
+}
+
+/* ── Event info card ── */
+.event-card {
+  background: var(--card-bg);
+  border: 2px solid var(--primary);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 24px 28px;
+  width: 100%;
+  text-align: left;
+}
+
+.event-card p {
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+.event-card hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 14px 0;
+}
+
+.event-card .small {
+  font-size: 13px;
+  color: var(--text-light);
+  margin-top: -4px;
+}
+
+.schedule {
+  list-style: none;
+  margin-top: 8px;
+}
+.schedule li {
+  padding: 3px 0;
+  font-size: 15px;
+}
+.schedule li::before {
+  content: "🕒 ";
+}
+
+/* ── Form card ── */
+.form-card {
+  background: var(--card-bg);
+  border: 2px solid var(--primary);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 28px;
+  width: 100%;
+}
+
+.form-card h2 {
+  color: var(--primary);
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 20px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+
+.field label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--primary);
+  margin-bottom: 6px;
+}
+
+.field input,
+.field select {
+  padding: 11px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 15px;
+  background: #fff;
+  color: var(--text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  appearance: none;
+  width: 100%;
+}
+
+.field input:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 61, 165, 0.15);
+}
+
+/* ── Radio group ── */
+.radio-group {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.radio-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  background: rgba(0, 61, 165, 0.04);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.radio-option:has(input:checked) {
+  border-color: var(--primary);
+  background: rgba(0, 61, 165, 0.09);
+}
+
+.radio-option input {
+  accent-color: var(--primary);
+  width: 17px;
+  height: 17px;
+}
+
+/* ── Submit button ── */
+.btn-submit {
+  width: 100%;
+  padding: 15px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btn-submit:hover   { background: var(--primary-dark); }
+.btn-submit:active  { transform: scale(0.98); }
+.btn-submit:disabled {
+  background: #aaa;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .row { grid-template-columns: 1fr; gap: 0; }
+  .radio-group { flex-direction: column; }
+  .form-card { padding: 20px 16px; }
+  .event-card { padding: 18px; }
+}
