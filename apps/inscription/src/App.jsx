@@ -208,7 +208,7 @@ function InscriptionPage({ form, setForm, teamAction, setTeamAction, reglement, 
           ) : (
             <div className="field">
               <label>Nom de la nouvelle équipe</label>
-              <input value={form.newTeamName} onChange={set('newTeamName')} type="text" required placeholder="Ex: Les Rapides" />
+              <input value={form.newTeamName} onChange={set('newTeamName')} type="text" required placeholder="Nom de votre équipe" />
             </div>
           )}
 
