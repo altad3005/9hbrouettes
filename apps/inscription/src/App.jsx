@@ -227,7 +227,7 @@ function InscriptionPage() {
             />
             <span>
               J'ai lu et j'accepte le{' '}
-              <Link to="/reglement" target="_blank">règlement de la course</Link>
+              <Link to="/reglement">règlement de la course</Link>
             </span>
           </label>
 
