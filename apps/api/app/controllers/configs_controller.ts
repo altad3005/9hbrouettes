@@ -4,8 +4,13 @@ import { WsService } from '#services/ws_service'
 
 export default class ConfigsController {
   async update({ request, response }: HttpContext) {
-    const { endTime } = request.body()
-    await Config.updateOrCreate({ key: 'endTime' }, { value: endTime })
+    const body = request.body()
+    const allowed = ['endTime', 'startTime']
+    await Promise.all(
+      allowed
+        .filter((key) => key in body)
+        .map((key) => Config.updateOrCreate({ key }, { value: body[key] }))
+    )
     const config = await Config.all()
     const configObj = Object.fromEntries(config.map((c) => [c.key, c.value]))
     WsService.broadcast({ type: 'config', data: configObj })

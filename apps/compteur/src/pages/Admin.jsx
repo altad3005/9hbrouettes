@@ -1,131 +1,139 @@
-import { useState, useEffect } from "react";
-import { api } from "../api";
-import QRCode from "react-qr-code";
+import { useState, useEffect } from 'react'
+import { api } from '../api'
 
 export default function Admin() {
-    const [teams, setTeams] = useState([]);
-    const [newTeamName, setNewTeamName] = useState("");
-    const [newTeamId, setNewTeamId] = useState("");
-    const [raceEndTime, setRaceEndTime] = useState("");
-    const [loadingTime, setLoadingTime] = useState(false);
-    const [editingTeam, setEditingTeam] = useState(null);
-    const [editScoreValue, setEditScoreValue] = useState(0);
+    const [teams, setTeams] = useState([])
+    const [newTeamName, setNewTeamName] = useState('')
+    const [newTeamId, setNewTeamId] = useState('')
+    const [raceStartTime, setRaceStartTime] = useState('')
+    const [raceEndTime, setRaceEndTime] = useState('')
+    const [loadingTime, setLoadingTime] = useState(false)
+    const [editingTeam, setEditingTeam] = useState(null)
+    const [editScoreValue, setEditScoreValue] = useState(0)
+    const [toast, setToast] = useState({ msg: '', ok: true })
 
     useEffect(() => {
-        api.connect();
-        const unsubTeams = api.onTeams(setTeams);
-        const unsubConfig = api.onConfig((config) => setRaceEndTime(config.endTime || ""));
-        return () => { unsubTeams(); unsubConfig(); };
-    }, []);
+        api.connect()
+        const unsubTeams = api.onTeams(setTeams)
+        const unsubConfig = api.onConfig(config => {
+            setRaceStartTime(config.startTime || '')
+            setRaceEndTime(config.endTime || '')
+        })
+        return () => { unsubTeams(); unsubConfig() }
+    }, [])
+
+    const notify = (msg, ok = true) => {
+        setToast({ msg, ok })
+        setTimeout(() => setToast({ msg: '', ok: true }), 3000)
+    }
 
     const handleUpdateTimer = async () => {
-        setLoadingTime(true);
+        setLoadingTime(true)
         try {
-            await api.updateConfig(raceEndTime);
-            alert("✅ Chrono mis à jour !");
-        } catch { alert("Erreur"); }
-        setLoadingTime(false);
-    };
+            await api.updateConfig({ endTime: raceEndTime, startTime: raceStartTime })
+            notify('Chrono mis à jour !')
+        } catch {
+            notify('Erreur lors de la mise à jour', false)
+        }
+        setLoadingTime(false)
+    }
 
     const handleAddTeam = async (e) => {
-        e.preventDefault();
-        if (!newTeamId || !newTeamName) return;
+        e.preventDefault()
+        if (!newTeamId || !newTeamName) return
         try {
-            await api.addTeam(newTeamId, newTeamName);
-            setNewTeamName(""); setNewTeamId("");
-        } catch { alert("Erreur création"); }
-    };
+            await api.addTeam(newTeamId, newTeamName)
+            setNewTeamName('')
+            setNewTeamId('')
+            notify(`Équipe "${newTeamName}" ajoutée`)
+        } catch {
+            notify('Erreur lors de la création', false)
+        }
+    }
 
     const handleDelete = async (teamId, teamName) => {
-        if (confirm(`Supprimer "${teamName}" ?`)) await api.deleteTeam(teamId);
-    };
+        if (!confirm(`Supprimer "${teamName}" ?`)) return
+        await api.deleteTeam(teamId)
+    }
 
     const saveScore = async (teamId) => {
-        await api.updateTeamScore(teamId, parseInt(editScoreValue));
-        setEditingTeam(null);
-    };
+        await api.updateTeamScore(teamId, parseInt(editScoreValue))
+        setEditingTeam(null)
+    }
 
     return (
         <div className="min-h-screen bg-cream font-condensed">
 
-            <style>{`
-            @media print {
-                .no-print { display: none !important; }
-                @page { size: A4; margin: 0; }
-                body { margin: 0; padding: 0; background: white; }
-                .print-only {
-                    display: block !important;
-                    position: absolute; top: 0; left: 0;
-                    width: 100%; background: white; z-index: 9999;
-                }
-                .qr-page {
-                    width: 100vw; height: 100vh;
-                    display: flex; flex-direction: column;
-                    justify-content: center; align-items: center;
-                    page-break-after: always; break-after: page;
-                    padding: 2cm; box-sizing: border-box;
-                }
-                .qr-page:last-child { page-break-after: auto; break-after: auto; }
-            }
-            `}</style>
-
-            <div className="bg-navy no-print sticky top-0 z-10">
-                <div className="px-4 sm:px-6 py-4 flex items-center justify-between">
-                    <h1 className="font-poster text-cream text-xl sm:text-2xl uppercase tracking-tight">
-                        Admin <span className="text-forest">9H Brouette</span>
-                    </h1>
-                    <button
-                        onClick={() => window.print()}
-                        className="bg-cream text-navy font-condensed font-bold text-xs sm:text-sm uppercase tracking-wider px-3 sm:px-4 py-2 rounded-lg hover:bg-cream-dark transition-colors"
-                    >
-                        🖨️ <span className="hidden xs:inline">Imprimer </span>QR
-                    </button>
+            {/* Toast */}
+            {toast.msg && (
+                <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-6 py-4 rounded-2xl font-bold text-base shadow-lg ${
+                    toast.ok ? 'bg-forest text-cream' : 'bg-red-500 text-white'
+                }`}>
+                    {toast.msg}
                 </div>
+            )}
+
+            {/* Header */}
+            <div className="bg-navy sticky top-0 z-10 px-6 py-5">
+                <h1 className="font-poster text-cream text-3xl uppercase tracking-tight">
+                    Admin <span className="text-forest">9H Brouette</span>
+                </h1>
             </div>
 
-            <div className="p-4 sm:p-6 pb-20 no-print space-y-4 sm:space-y-6">
+            <div className="p-4 sm:p-6 pb-20 space-y-6">
 
-                <div className="grid md:grid-cols-2 gap-4">
+                {/* Chrono + Ajout */}
+                <div className="grid sm:grid-cols-2 gap-4">
 
-                    <div className="bg-white rounded-2xl border-2 border-cream-dark p-4 sm:p-5">
-                        <h2 className="font-poster text-navy text-base sm:text-lg uppercase mb-3">⏱ Heure de fin</h2>
-                        <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="bg-white rounded-2xl border border-cream-dark p-6 space-y-3">
+                        <h2 className="font-poster text-navy text-base uppercase tracking-wide">⏱ Horaires de la course</h2>
+                        <div className="flex gap-3 items-center">
+                            <span className="text-navy/50 text-sm font-bold uppercase tracking-wide w-14 shrink-0">Début</span>
                             <input
                                 type="datetime-local"
-                                className="border-2 border-cream-dark rounded-lg p-2.5 font-mono text-navy bg-cream focus:border-navy focus:outline-none w-full"
-                                value={raceEndTime}
-                                onChange={(e) => setRaceEndTime(e.target.value)}
+                                className="border border-cream-dark rounded-xl p-3 font-mono text-base text-navy bg-cream focus:border-navy focus:outline-none flex-1"
+                                value={raceStartTime}
+                                onChange={e => setRaceStartTime(e.target.value)}
                             />
-                            <button
-                                onClick={handleUpdateTimer}
-                                disabled={loadingTime}
-                                className="bg-navy text-cream font-condensed font-bold uppercase tracking-wide py-2.5 px-5 rounded-lg hover:bg-navy/80 transition-colors disabled:opacity-50 whitespace-nowrap"
-                            >
-                                {loadingTime ? "..." : "Mettre à jour"}
-                            </button>
                         </div>
+                        <div className="flex gap-3 items-center">
+                            <span className="text-navy/50 text-sm font-bold uppercase tracking-wide w-14 shrink-0">Fin</span>
+                            <input
+                                type="datetime-local"
+                                className="border border-cream-dark rounded-xl p-3 font-mono text-base text-navy bg-cream focus:border-navy focus:outline-none flex-1"
+                                value={raceEndTime}
+                                onChange={e => setRaceEndTime(e.target.value)}
+                            />
+                        </div>
+                        <button
+                            onClick={handleUpdateTimer}
+                            disabled={loadingTime}
+                            className="w-full bg-navy text-cream font-bold text-base uppercase py-3 rounded-xl hover:bg-navy/80 transition-colors disabled:opacity-40"
+                        >
+                            {loadingTime ? '…' : 'Enregistrer'}
+                        </button>
                     </div>
 
-                    <div className="bg-white rounded-2xl border-2 border-cream-dark p-4 sm:p-5">
-                        <h2 className="font-poster text-navy text-base sm:text-lg uppercase mb-3">+ Ajouter une équipe</h2>
-                        <form onSubmit={handleAddTeam} className="flex gap-2 flex-wrap">
+                    <div className="bg-white rounded-2xl border border-cream-dark p-6">
+                        <h2 className="font-poster text-navy text-base uppercase tracking-wide mb-4">+ Nouvelle équipe</h2>
+                        <form onSubmit={handleAddTeam} className="flex gap-3">
                             <input
                                 type="text"
-                                placeholder="ID (ex: eq1)"
+                                placeholder="ID"
                                 value={newTeamId}
                                 onChange={e => setNewTeamId(e.target.value)}
-                                className="border-2 border-cream-dark rounded-lg p-2.5 w-24 font-mono font-bold text-navy bg-cream focus:border-navy focus:outline-none"
+                                className="border border-cream-dark rounded-xl p-3 w-24 font-mono text-base font-bold text-navy bg-cream focus:border-navy focus:outline-none"
                             />
                             <input
                                 type="text"
                                 placeholder="Nom de l'équipe"
                                 value={newTeamName}
                                 onChange={e => setNewTeamName(e.target.value)}
-                                className="border-2 border-cream-dark rounded-lg p-2.5 flex-1 min-w-[120px] font-condensed text-navy bg-cream focus:border-navy focus:outline-none"
+                                className="border border-cream-dark rounded-xl p-3 flex-1 text-base text-navy bg-cream focus:border-navy focus:outline-none"
                             />
                             <button
                                 type="submit"
-                                className="bg-forest text-cream font-poster text-xl px-5 rounded-lg hover:bg-forest/80 transition-colors"
+                                className="bg-forest text-cream font-poster text-2xl px-5 rounded-xl hover:bg-forest/80 transition-colors shrink-0"
                             >
                                 +
                             </button>
@@ -133,82 +141,61 @@ export default function Admin() {
                     </div>
                 </div>
 
+                {/* Liste équipes */}
                 <div>
-                    <h2 className="font-poster text-navy text-base sm:text-lg uppercase mb-3">
-                        Équipes{' '}
-                        <span className="text-navy/30 font-condensed font-bold text-sm normal-case">({teams.length})</span>
+                    <h2 className="font-poster text-navy text-base uppercase tracking-wide mb-4">
+                        Équipes <span className="text-navy/30 font-condensed normal-case font-bold text-sm">({teams.length})</span>
                     </h2>
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                         {teams.map(team => (
-                            <div key={team.id} className="bg-white border-2 border-cream-dark rounded-xl px-3 sm:px-4 py-3">
-                                <div className="flex items-center gap-2 sm:gap-3">
-                                    <div className="font-mono text-xs bg-cream text-navy/50 px-2 py-1 rounded-lg shrink-0 border border-cream-dark hidden sm:block">
-                                        {team.id}
-                                    </div>
-                                    <div className="font-condensed font-bold text-navy text-base sm:text-lg flex-grow uppercase truncate">
-                                        {team.nom}
-                                    </div>
+                            <div key={team.id} className="bg-white border border-cream-dark rounded-2xl px-5 py-4">
+                                <div className="flex items-center gap-4">
+                                    <span className="font-mono text-sm text-navy/30 shrink-0 hidden sm:block">{team.id}</span>
+                                    <span className="font-condensed font-bold text-navy text-xl uppercase flex-grow truncate">{team.nom}</span>
 
                                     {editingTeam !== team.id && (
-                                        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-                                            <div className="font-poster text-navy text-lg sm:text-xl tabular-nums min-w-[2.5ch] text-right">
+                                        <div className="flex items-center gap-3 shrink-0">
+                                            <span className="font-poster text-navy text-2xl tabular-nums">
                                                 {team.tours}
-                                                <span className="font-condensed font-bold text-[10px] text-navy/30 ml-0.5 normal-case">trs</span>
-                                            </div>
+                                                <span className="text-navy/25 text-xs font-condensed ml-1">trs</span>
+                                            </span>
                                             <button
-                                                onClick={() => { setEditingTeam(team.id); setEditScoreValue(team.tours); }}
-                                                className="text-navy/30 hover:text-navy p-1.5 rounded-lg hover:bg-cream transition-colors"
+                                                onClick={() => { setEditingTeam(team.id); setEditScoreValue(team.tours) }}
+                                                className="text-navy/25 hover:text-navy p-3 rounded-xl hover:bg-cream transition-colors text-xl"
                                             >✏️</button>
                                             <button
                                                 onClick={() => handleDelete(team.id, team.nom)}
-                                                className="text-red-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors"
+                                                className="text-red-300 hover:text-red-500 hover:bg-red-50 p-3 rounded-xl transition-colors text-xl"
                                             >🗑️</button>
                                         </div>
                                     )}
                                 </div>
 
                                 {editingTeam === team.id && (
-                                    <div className="flex items-center gap-2 mt-3 pt-3 border-t-2 border-cream-dark">
-                                        <span className="text-navy/50 text-sm font-bold uppercase tracking-wide">Score :</span>
+                                    <div className="flex items-center gap-3 mt-4 pt-4 border-t border-cream-dark">
+                                        <span className="text-navy/40 text-sm font-bold uppercase tracking-wide">Tours :</span>
                                         <input
                                             type="number"
                                             value={editScoreValue}
                                             onChange={e => setEditScoreValue(e.target.value)}
-                                            className="w-20 p-2 border-2 border-navy rounded-lg text-center font-mono font-bold text-navy bg-cream focus:outline-none"
+                                            className="w-24 p-3 border border-navy rounded-xl text-center font-mono font-bold text-navy bg-cream focus:outline-none text-base"
                                             autoFocus
                                         />
-                                        <button onClick={() => saveScore(team.id)} className="bg-forest text-cream font-bold text-sm px-4 py-2 rounded-lg">OK</button>
-                                        <button onClick={() => setEditingTeam(null)} className="text-navy/40 hover:text-navy font-bold text-sm px-3 py-2">Annuler</button>
+                                        <button onClick={() => saveScore(team.id)} className="bg-forest text-cream font-bold text-base px-6 py-3 rounded-xl">Sauver</button>
+                                        <button onClick={() => setEditingTeam(null)} className="text-navy/30 hover:text-navy font-bold text-base px-4 py-3">Annuler</button>
                                     </div>
                                 )}
                             </div>
                         ))}
 
                         {teams.length === 0 && (
-                            <div className="text-center text-navy/30 font-condensed font-bold uppercase tracking-widest text-sm py-8">
+                            <div className="text-center text-navy/25 font-condensed font-bold uppercase tracking-widest text-base py-12">
                                 Aucune équipe
                             </div>
                         )}
                     </div>
                 </div>
             </div>
-
-            <div className="print-only hidden">
-                {teams.map(team => (
-                    <div key={team.id} className="qr-page">
-                        <div className="border-8 border-black p-12 w-full h-full flex flex-col items-center justify-center rounded-3xl box-border">
-                            <h3 className="text-[5rem] font-black uppercase mb-12 text-center leading-tight">{team.nom}</h3>
-                            <div className="bg-white p-4 mb-12">
-                                <QRCode size={350} style={{ height: "auto", maxWidth: "100%", width: "100%" }} value={team.id} viewBox="0 0 256 256" />
-                            </div>
-                            <p className="text-4xl font-mono font-bold text-slate-500 mt-8">ID: {team.id}</p>
-                            <div className="mt-auto pt-12 text-center opacity-50">
-                                <p className="text-2xl font-bold uppercase tracking-widest">9H Brouettes - Grand Prix de Villers</p>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
         </div>
-    );
+    )
 }

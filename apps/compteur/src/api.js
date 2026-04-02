@@ -88,11 +88,11 @@ class AppAPI {
     return res.json()
   }
 
-  async updateConfig(endTime) {
+  async updateConfig({ endTime, startTime }) {
     await fetch(`${API_BASE}/config`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ endTime }),
+      body: JSON.stringify({ endTime, startTime }),
     })
   }
 }
