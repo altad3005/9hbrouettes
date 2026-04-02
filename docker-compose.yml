@@ -42,8 +42,15 @@ services:
     build:
       context: .
       dockerfile: apps/inscription/Dockerfile
-    ports:
-      - "8080:80"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.inscription.rule=Host(`inscription.${DOMAIN}`)"
+      - "traefik.http.routers.inscription.entrypoints=websecure"
+      - "traefik.http.routers.inscription.tls.certresolver=letsencrypt"
+      - "traefik.http.services.inscription.loadbalancer.server.port=80"
+    networks:
+      - default
+      - dokploy-network
     depends_on:
       - api
     restart: unless-stopped
@@ -52,11 +59,23 @@ services:
     build:
       context: .
       dockerfile: apps/compteur/Dockerfile
-    ports:
-      - "8081:80"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.compteur.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.compteur.entrypoints=websecure"
+      - "traefik.http.routers.compteur.tls.certresolver=letsencrypt"
+      - "traefik.http.services.compteur.loadbalancer.server.port=80"
+    networks:
+      - default
+      - dokploy-network
     depends_on:
       - api
     restart: unless-stopped
 
 volumes:
   postgres_data:
+
+networks:
+  default:
+  dokploy-network:
+    external: true
