@@ -9,6 +9,7 @@ export default class WsProvider {
   async start() {}
 
   async ready() {
+    if (this.app.getEnvironment() !== 'web') return
     const server = await this.app.container.make('server')
     const nodeServer = server.getNodeServer()
     if (!nodeServer) throw new Error('HTTP server not available')
