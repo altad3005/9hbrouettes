@@ -43,17 +43,10 @@ function Toast({ msg, type }) {
 }
 
 // ── Formulaire d'inscription ───────────────────────────────────────────────
-function InscriptionPage() {
-  const [teams, setTeams]           = useState([])
-  const [loading, setLoading]       = useState(false)
-  const [toast, setToast]           = useState({ msg: '', type: '' })
-  const [teamAction, setTeamAction] = useState('JOIN')
-  const [reglement, setReglement]   = useState(false)
-  const [form, setForm]             = useState({
-    prenom: '', nom: '', email: '', telephone: '',
-    dateNaissance: '', repas: 'normal',
-    teamId: '', newTeamName: '',
-  })
+function InscriptionPage({ form, setForm, teamAction, setTeamAction, reglement, setReglement }) {
+  const [teams, setTeams]     = useState([])
+  const [loading, setLoading] = useState(false)
+  const [toast, setToast]     = useState({ msg: '', type: '' })
 
   useEffect(() => {
     axios.get('/api/teams').then(({ data }) => setTeams(data))
@@ -242,10 +235,24 @@ function InscriptionPage() {
 
 // ── Router ─────────────────────────────────────────────────────────────────
 export default function App() {
+  const [teamAction, setTeamAction] = useState('JOIN')
+  const [reglement, setReglement]   = useState(false)
+  const [form, setForm]             = useState({
+    prenom: '', nom: '', email: '', telephone: '',
+    dateNaissance: '', repas: 'normal',
+    teamId: '', newTeamName: '',
+  })
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<InscriptionPage />} />
+        <Route path="/" element={
+          <InscriptionPage
+            form={form} setForm={setForm}
+            teamAction={teamAction} setTeamAction={setTeamAction}
+            reglement={reglement} setReglement={setReglement}
+          />
+        } />
         <Route path="/reglement" element={<Reglement />} />
       </Routes>
     </BrowserRouter>
