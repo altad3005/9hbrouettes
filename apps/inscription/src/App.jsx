@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
 import axios from 'axios'
 import logoImg from './assets/logo.png'
 import brouetteImg from './assets/brouette.png'
+import Reglement from './pages/Reglement'
 import './App.css'
 
 // ── Brouette background ────────────────────────────────────────────────────
@@ -40,12 +42,13 @@ function Toast({ msg, type }) {
   )
 }
 
-// ── Main app ───────────────────────────────────────────────────────────────
-export default function App() {
+// ── Formulaire d'inscription ───────────────────────────────────────────────
+function InscriptionPage() {
   const [teams, setTeams]           = useState([])
   const [loading, setLoading]       = useState(false)
   const [toast, setToast]           = useState({ msg: '', type: '' })
   const [teamAction, setTeamAction] = useState('JOIN')
+  const [reglement, setReglement]   = useState(false)
   const [form, setForm]             = useState({
     prenom: '', nom: '', email: '', telephone: '',
     dateNaissance: '', repas: 'normal',
@@ -65,6 +68,10 @@ export default function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (!reglement) {
+      notify('Vous devez accepter le règlement pour vous inscrire.', 'error')
+      return
+    }
     setLoading(true)
     let createdTeamId = null
 
@@ -212,11 +219,35 @@ export default function App() {
             </div>
           )}
 
-          <button className="btn-submit" type="submit" disabled={loading}>
+          <label className="checkbox-option">
+            <input
+              type="checkbox"
+              checked={reglement}
+              onChange={(e) => setReglement(e.target.checked)}
+            />
+            <span>
+              J'ai lu et j'accepte le{' '}
+              <Link to="/reglement" target="_blank">règlement de la course</Link>
+            </span>
+          </label>
+
+          <button className="btn-submit" type="submit" disabled={loading || !reglement}>
             {loading ? 'En cours…' : "S'inscrire"}
           </button>
         </form>
       </div>
     </>
+  )
+}
+
+// ── Router ─────────────────────────────────────────────────────────────────
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<InscriptionPage />} />
+        <Route path="/reglement" element={<Reglement />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
