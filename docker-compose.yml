@@ -72,6 +72,15 @@ services:
       - api
     restart: unless-stopped
 
+  adminer:
+    image: adminer:latest
+    networks:
+      - default
+      - dokploy-network
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
 volumes:
   postgres_data:
 
