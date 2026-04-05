@@ -25,7 +25,7 @@ export default function Reglement() {
           <li>Les équipes s'engagent à vérifier que les personnes qu'elles inscrivent sont en ordre d'assurance.</li>
           <li>L'assurance de la fédération scoute couvre uniquement les personnes participant à l'organisation des 9H Brouette.</li>
           <li>Les participants reconnaissent que la participation à la course comporte des risques physiques.</li>
-          <li>Les sections veillent à inscrire uniquement des personnes en bon état de santé et aptes à participer pleinement à la course.</li>
+          <li>Les équipes veillent à inscrire uniquement des personnes en bon état de santé et aptes à participer pleinement à la course.</li>
           <li>Tous les participants doivent être âgés de plus de 12 ans.</li>
         </ul>
 

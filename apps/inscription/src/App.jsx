@@ -133,7 +133,8 @@ function InscriptionPage({ form, setForm, teamAction, setTeamAction, reglement, 
           <p><strong>👥 Équipe :</strong> 10 à 20 personnes (+12 ans)</p>
           <hr />
           <p><strong>🎟️ Inscription Course : 20€ / pers.</strong></p>
-          <p className="small">Inclus : Entrée prairie, pain saucisse (midi) et 4 jetons.</p>
+          <p className="small">Inclus : Entrée prairie, pain saucisse (midi) et 2 jetons.</p>
+          <p className="small">Virement à effectuer sur le compte : <strong>BE15 7320 8604 6630</strong></p>
           <hr />
           <p><strong>Au programme :</strong></p>
           <ul className="schedule">
