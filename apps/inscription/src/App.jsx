@@ -69,12 +69,11 @@ function InscriptionPage({ form, setForm, teamAction, setTeamAction, reglement, 
     let createdTeamId = null
 
     try {
-      let equipe = null
+      let teamId = null
 
       if (teamAction === 'JOIN') {
         if (!form.teamId) throw new Error('Veuillez sélectionner une équipe.')
-        const team = teams.find((t) => t.id === form.teamId)
-        equipe = team?.nom ?? null
+        teamId = form.teamId
       } else {
         const teamName = form.newTeamName.trim()
         if (!teamName) throw new Error("Veuillez donner un nom à l'équipe.")
@@ -89,7 +88,7 @@ function InscriptionPage({ form, setForm, teamAction, setTeamAction, reglement, 
           nom: teamName,
         })
         createdTeamId = newTeam.id
-        equipe = newTeam.nom
+        teamId = newTeam.id
       }
 
       await axios.post('/api/inscriptions', {
@@ -99,7 +98,7 @@ function InscriptionPage({ form, setForm, teamAction, setTeamAction, reglement, 
         telephone:     form.telephone || null,
         dateNaissance: form.dateNaissance || null,
         repas:         form.repas,
-        equipe,
+        teamId,
       })
 
       notify('Inscription réussie !', 'success')

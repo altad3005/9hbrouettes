@@ -15,15 +15,15 @@ export default function Inscriptions() {
             .catch(() => setLoading(false))
     }, [])
 
-    const equipes = [...new Set(inscriptions.map(i => i.equipe).filter(Boolean))].sort()
+    const equipes = [...new Set(inscriptions.map(i => i.team?.nom).filter(Boolean))].sort()
 
     const filtered = inscriptions.filter(i => {
         const q = search.toLowerCase()
         const matchSearch = !q ||
             `${i.prenom} ${i.nom}`.toLowerCase().includes(q) ||
             (i.email || '').toLowerCase().includes(q) ||
-            (i.equipe || '').toLowerCase().includes(q)
-        const matchEquipe = !filterEquipe || i.equipe === filterEquipe
+            (i.team?.nom || '').toLowerCase().includes(q)
+        const matchEquipe = !filterEquipe || i.team?.nom === filterEquipe
         return matchSearch && matchEquipe
     })
 
@@ -106,9 +106,9 @@ export default function Inscriptions() {
                                         )}
                                     </div>
                                     <div className="shrink-0 flex flex-col items-end gap-1">
-                                        {i.equipe ? (
+                                        {i.team?.nom ? (
                                             <span className="bg-navy/10 text-navy text-xs font-bold uppercase tracking-wide px-3 py-1 rounded-full">
-                                                {i.equipe}
+                                                {i.team?.nom}
                                             </span>
                                         ) : (
                                             <span className="bg-cream-dark text-navy/30 text-xs font-bold uppercase tracking-wide px-3 py-1 rounded-full">

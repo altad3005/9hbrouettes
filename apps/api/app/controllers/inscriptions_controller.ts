@@ -4,18 +4,18 @@ import ExcelJS from 'exceljs'
 
 export default class InscriptionsController {
   async store({ request, response }: HttpContext) {
-    const data = request.body()
-    const inscription = await Inscription.create(data)
+    const { prenom, nom, email, telephone, dateNaissance, repas, teamId } = request.body()
+    const inscription = await Inscription.create({ prenom, nom, email, telephone, dateNaissance, repas, teamId: teamId ?? null })
     return response.created(inscription)
   }
 
   async index({ response }: HttpContext) {
-    const inscriptions = await Inscription.all()
+    const inscriptions = await Inscription.query().preload('team')
     return response.ok(inscriptions)
   }
 
   async export({ response }: HttpContext) {
-    const inscriptions = await Inscription.all()
+    const inscriptions = await Inscription.query().preload('team')
 
     const workbook = new ExcelJS.Workbook()
     const sheet = workbook.addWorksheet('Inscriptions')
@@ -30,7 +30,7 @@ export default class InscriptionsController {
       { header: 'Équipe', key: 'equipe', width: 20 },
     ]
 
-    inscriptions.forEach((i) => sheet.addRow(i.toJSON()))
+    inscriptions.forEach((i) => sheet.addRow({ ...i.toJSON(), equipe: i.team?.nom ?? null }))
 
     response.header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response.header('Content-Disposition', 'attachment; filename=inscriptions.xlsx')

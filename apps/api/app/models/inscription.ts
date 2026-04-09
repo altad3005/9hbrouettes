@@ -1,5 +1,7 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column } from '@adonisjs/lucid/orm'
+import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
+import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import Team from '#models/team'
 
 export default class Inscription extends BaseModel {
   @column({ isPrimary: true })
@@ -24,7 +26,10 @@ export default class Inscription extends BaseModel {
   declare repas: 'normal' | 'vege'
 
   @column()
-  declare equipe: string | null
+  declare teamId: string | null
+
+  @belongsTo(() => Team)
+  declare team: BelongsTo<typeof Team>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
