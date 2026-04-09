@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
 const CODES = {
-  staff: '0000',
-  admin: '1234',
+  staff: import.meta.env.VITE_STAFF_CODE,
+  admin: import.meta.env.VITE_ADMIN_CODE,
 }
 
 export default function Protected({ type, children }) {

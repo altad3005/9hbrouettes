@@ -17,6 +17,10 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
 FROM base AS builder
 ARG VITE_INSCRIPTION_URL
 ENV VITE_INSCRIPTION_URL=$VITE_INSCRIPTION_URL
+ARG VITE_STAFF_CODE
+ENV VITE_STAFF_CODE=$VITE_STAFF_CODE
+ARG VITE_ADMIN_CODE
+ENV VITE_ADMIN_CODE=$VITE_ADMIN_CODE
 WORKDIR /app
 COPY --from=deps /app/node_modules            ./node_modules
 COPY --from=deps /app/apps/compteur/node_modules ./apps/compteur/node_modules

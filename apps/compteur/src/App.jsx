@@ -4,6 +4,7 @@ import { api } from './api'
 import Classement from './pages/Classement'
 import Scan from './pages/Scan'
 import Admin from './pages/Admin'
+import Inscriptions from './pages/Inscriptions'
 import Protected from './components/Protected'
 import Countdown from './pages/Countdown'
 
@@ -21,6 +22,10 @@ function BottomNav() {
             <NavLink to="/scan" className={({ isActive }) => `${base} ${isActive ? active : inactive}`}>
                 <span className="text-lg">✍️</span>
                 Encodage
+            </NavLink>
+            <NavLink to="/inscriptions" className={({ isActive }) => `${base} ${isActive ? active : inactive}`}>
+                <span className="text-lg">📋</span>
+                Inscrits
             </NavLink>
             <NavLink to="/admin" className={({ isActive }) => `${base} ${isActive ? active : inactive}`}>
                 <span className="text-lg">⚙️</span>
@@ -47,18 +52,24 @@ function App() {
 
     if (!configLoaded) return <div className="min-h-screen bg-navy" />
 
-    if (!eventStarted) return <Countdown targetDate={startTime} />
-
     return (
         <BrowserRouter>
             <div className="pb-14">
                 <Routes>
-                    <Route path="/" element={<Classement />} />
+                    <Route path="/" element={eventStarted ? <Classement /> : <Countdown targetDate={startTime} />} />
                     <Route
                         path="/scan"
                         element={
                             <Protected type="staff">
                                 <Scan />
+                            </Protected>
+                        }
+                    />
+                    <Route
+                        path="/inscriptions"
+                        element={
+                            <Protected type="admin">
+                                <Inscriptions />
                             </Protected>
                         }
                     />

@@ -61,6 +61,8 @@ services:
       dockerfile: apps/compteur/Dockerfile
       args:
         VITE_INSCRIPTION_URL: https://inscription.${DOMAIN}
+        VITE_STAFF_CODE: ${STAFF_CODE}
+        VITE_ADMIN_CODE: ${ADMIN_CODE}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.compteur.rule=Host(`${DOMAIN}`)"
