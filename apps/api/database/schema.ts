@@ -46,7 +46,7 @@ export class ConfigSchema extends BaseModel {
 }
 
 export class InscriptionSchema extends BaseModel {
-  static $columns = ['createdAt', 'dateNaissance', 'email', 'equipe', 'id', 'nom', 'prenom', 'repas', 'telephone', 'updatedAt'] as const
+  static $columns = ['createdAt', 'dateNaissance', 'email', 'id', 'nom', 'prenom', 'repas', 'teamId', 'telephone', 'updatedAt'] as const
   $columns = InscriptionSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
@@ -54,8 +54,6 @@ export class InscriptionSchema extends BaseModel {
   declare dateNaissance: DateTime | null
   @column()
   declare email: string
-  @column()
-  declare equipe: string | null
   @column({ isPrimary: true })
   declare id: number
   @column()
@@ -64,6 +62,8 @@ export class InscriptionSchema extends BaseModel {
   declare prenom: string
   @column()
   declare repas: string
+  @column()
+  declare teamId: string | null
   @column()
   declare telephone: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
